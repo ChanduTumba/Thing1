@@ -2,281 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unlock to Proceed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Slide to Unlock</title>
   <style>
-    body {
+    /* General Body Styles */
+    body, html {
+      height: 100%;
       margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      background-color: #f0f0f0;
+      background-color: #1a1a1a;
       font-family: Arial, sans-serif;
-      overflow: hidden; /* Hide scrollbars if content exceeds viewport */
+      overflow: hidden; /* Prevents scrollbars during slide */
     }
 
-    #unlock-screen {
-      text-align: center;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      transition: opacity 0.5s ease-out;
-      opacity: 1;
-      visibility: visible;
-      position: relative; /* Ensure it's positioned for its children */
-      z-index: 10; /* Ensure it's above the main content initially */
-    }
-
-    #rickroll-content {
-      text-align: center;
-      padding-top: 50px;
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
-      display: none; /* Hidden by default */
-      opacity: 0;
-      transition: opacity 0.5s ease-in;
-      position: absolute; /* Position absolutely to fade in over previous content */
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box; /* Include padding in element's total width and height */
-    }
-
-    .slider-container {
-      width: 250px;
-      height: 50px;
-      background-color: #ddd;
-      border-radius: 25px;
+    /* Slider Container Styles */
+    #slider-container {
+      width: 300px;
+      height: 60px;
+      background-color: #333;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
       position: relative;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
       overflow: hidden;
-      margin-top: 30px;
-      cursor: grab;
-      user-select: none; /* Prevents text selection during drag */
-      touch-action: pan-y; /* Allows vertical scrolling on touch devices while sliding horizontally */
     }
 
-    .slider-text {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      line-height: 50px;
-      text-align: center;
-      color: #666;
-      font-size: 18px;
-      z-index: 1;
-      pointer-events: none; /* Allows clicks/drags to pass through to the handle */
-    }
-
-    .slider-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 0; /* Starts at 0 width */
-      background-color: #4CAF50;
-      border-radius: 25px;
-      transition: width 0.1s linear; /* Smooth fill */
-    }
-
-    .slider-handle {
-      width: 50px;
-      height: 50px;
-      background-color: #4CAF50;
+    /* Slider Knob Styles */
+    #slider-knob {
+      width: 54px;
+      height: 54px;
+      background-color: #fff;
       border-radius: 50%;
       position: absolute;
-      left: 0; /* Start at the left edge */
-      top: 0;
-      cursor: grab;
-      transition: background-color 0.2s ease;
-      z-index: 2;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add a subtle shadow */
-      display: flex; /* For centering content inside if needed */
+      left: 3px;
+      cursor: pointer;
+      display: flex;
       justify-content: center;
       align-items: center;
+      font-size: 24px;
+      color: #333;
+      z-index: 2;
+      user-select: none; /* Prevents text selection during drag */
+    }
+    
+    /* Slider Text Styles */
+    #slider-text {
+      color: #888;
+      font-size: 18px;
+      position: absolute;
+      left: 80px;
+      z-index: 1;
+      user-select: none;
     }
 
-    .slider-handle:active {
-      cursor: grabbing;
-      background-color: #45a049;
+    /* Rickroll Content (Initially Hidden) */
+    #rickroll-content {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background-color: #f0f0f0;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
 
-  <div id="unlock-screen">
-    <h2>Slide to Unlock!</h2>
-    <div class="slider-container" id="sliderContainer">
-      <div class="slider-fill" id="sliderFill"></div>
-      <div class="slider-text" id="sliderText">Slide to Unlock</div>
-      <div class="slider-handle" id="sliderHandle"></div>
-    </div>
+  <div id="slider-container">
+    <div id="slider-knob">&gt;</div>
+    <div id="slider-text">Slide to unlock</div>
   </div>
 
   <div id="rickroll-content">
     <h1>Oops! This isn’t a clue. You’ve just been Rickrolled!</h1>
     <p style="font-size: 18px;">Enjoy this unexpected twist! 😉</p>
-
+    
     <img src="rick-roll-rick-ashley.gif" alt="Rickroll GIF" width="300" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
 
-    <audio id="rickrollAudio" preload="auto">
-      <source src="https://www.myinstants.com/media/sounds/rick-roll.mp3" type="audio/mpeg">
+    <audio id="rickroll-audio">
+      <source src="https://www.myinstants.com/media/sounds/rick-rol.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
   </div>
 
   <script>
-    const sliderContainer = document.getElementById('sliderContainer');
-    const sliderHandle = document.getElementById('sliderHandle');
-    const sliderFill = document.getElementById('sliderFill');
-    const sliderText = document.getElementById('sliderText');
-    const unlockScreen = document.getElementById('unlock-screen');
+    const sliderKnob = document.getElementById('slider-knob');
+    const sliderContainer = document.getElementById('slider-container');
     const rickrollContent = document.getElementById('rickroll-content');
-    const rickrollAudio = document.getElementById('rickrollAudio');
+    const rickrollAudio = document.getElementById('rickroll-audio');
+    const sliderText = document.getElementById('slider-text');
 
     let isDragging = false;
-    let initialX; // Stores the initial clientX on mousedown/touchstart
-    let handleInitialLeft; // Stores the initial 'left' style of the handle
+    let startX = 0;
+    let offsetX = 0;
 
-    // Percentage of the slider width to trigger unlock
-    const unlockThreshold = 0.9;
-
-    // --- Mouse Events ---
-    sliderHandle.addEventListener('mousedown', (e) => {
+    // Function to handle the start of a drag (mouse or touch)
+    const startDrag = (e) => {
       isDragging = true;
-      initialX = e.clientX;
-      // Get the current left position relative to its parent container
-      handleInitialLeft = sliderHandle.offsetLeft;
-      sliderHandle.style.transition = 'none'; // Disable transition during drag
-      sliderFill.style.transition = 'none';
-      sliderContainer.style.cursor = 'grabbing';
-      e.preventDefault(); // Prevent text selection on drag
-    });
+      // Use clientX for mouse and touches[0].clientX for touch
+      startX = e.clientX || e.touches[0].clientX;
+      sliderKnob.style.transition = 'none'; // Disable transition for smooth dragging
+      sliderText.style.transition = 'none';
+    };
 
-    document.addEventListener('mousemove', (e) => {
+    // Function to handle the dragging motion
+    const onDrag = (e) => {
       if (!isDragging) return;
+      e.preventDefault(); // Prevents unwanted browser actions during drag
+      
+      const currentX = e.clientX || e.touches[0].clientX;
+      let newLeft = currentX - startX;
 
-      const deltaX = e.clientX - initialX;
-      let newLeft = handleInitialLeft + deltaX;
-
-      // Clamp newLeft within the slider bounds
-      const maxLeft = sliderContainer.offsetWidth - sliderHandle.offsetWidth;
-      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-
-      sliderHandle.style.left = ${newLeft}px;
-      sliderFill.style.width = ${newLeft + sliderHandle.offsetWidth / 2}px;
-
-      const currentPosition = newLeft + sliderHandle.offsetWidth / 2;
-      const unlockWidth = sliderContainer.offsetWidth * unlockThreshold;
-
-      if (currentPosition >= unlockWidth) {
-        sliderText.textContent = "Release to Unlock!";
-      } else {
-        sliderText.textContent = "Slide to Unlock";
+      // Constrain the knob within the slider's boundaries
+      if (newLeft < 3) {
+        newLeft = 3;
       }
-    });
+      if (newLeft > sliderContainer.offsetWidth - sliderKnob.offsetWidth - 3) {
+        newLeft = sliderContainer.offsetWidth - sliderKnob.offsetWidth - 3;
+      }
+      
+      sliderKnob.style.left = ${newLeft}px;
+      
+      // Fade out the text as you slide
+      const opacity = 1 - (newLeft / (sliderContainer.offsetWidth / 2));
+      sliderText.style.opacity = opacity < 0 ? 0 : opacity;
+    };
 
-    document.addEventListener('mouseup', () => {
+    // Function to handle the end of a drag
+    const endDrag = () => {
       if (!isDragging) return;
       isDragging = false;
+      
+      const finalLeft = parseInt(sliderKnob.style.left, 10);
+      const unlockThreshold = sliderContainer.offsetWidth * 0.75;
 
-      const currentHandlePosition = parseFloat(sliderHandle.style.left) + sliderHandle.offsetWidth / 2;
-      const unlockWidth = sliderContainer.offsetWidth * unlockThreshold;
+      if (finalLeft > unlockThreshold) {
+        // --- UNLOCK SUCCESS ---
+        sliderContainer.style.display = 'none'; // Hide the slider
+        document.body.style.backgroundColor = '#f0f0f0'; // Change body background
+        rickrollContent.style.display = 'block'; // Show the rickroll content
+        
+        // Play the audio - this works because it's triggered by user interaction
+        rickrollAudio.play().catch(error => {
+          console.error("Audio playback failed:", error);
+          // You could show a message here if play() is rejected.
+        });
 
-      if (currentHandlePosition >= unlockWidth) {
-        // Unlocked!
-        unlockScreen.style.opacity = '0';
-        unlockScreen.style.visibility = 'hidden';
-        setTimeout(() => {
-          unlockScreen.style.display = 'none';
-          rickrollContent.style.display = 'block'; // Make it visible
-          setTimeout(() => {
-            rickrollContent.style.opacity = '1'; // Fade it in
-            // Attempt to play audio
-            rickrollAudio.play().catch(error => {
-              console.warn("Autoplay was prevented:", error);
-              // You could add a visible "Play Sound" button here if autoplay fails
-            });
-          }, 50); // Small delay for fade-in effect
-        }, 500); // Wait for unlock screen to fade out
       } else {
-        // Reset slider if not fully slid
-        sliderHandle.style.transition = 'left 0.3s ease';
-        sliderFill.style.transition = 'width 0.3s ease';
-        sliderHandle.style.left = '0px';
-        sliderFill.style.width = '0px';
-        sliderText.textContent = "Slide to Unlock";
+        // --- RESET SLIDER ---
+        sliderKnob.style.transition = 'left 0.3s ease';
+        sliderText.style.transition = 'opacity 0.3s ease';
+        sliderKnob.style.left = '3px';
+        sliderText.style.opacity = '1';
       }
-      sliderContainer.style.cursor = 'grab';
-    });
+    };
 
-    // --- Touch Events ---
-    sliderHandle.addEventListener('touchstart', (e) => {
-      isDragging = true;
-      initialX = e.touches[0].clientX;
-      handleInitialLeft = sliderHandle.offsetLeft;
-      sliderHandle.style.transition = 'none';
-      sliderFill.style.transition = 'none';
-      sliderContainer.style.cursor = 'grabbing';
-      e.preventDefault(); // Prevent scrolling while dragging
-    }, { passive: false });
+    // Mouse Event Listeners
+    sliderKnob.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', endDrag);
 
-    document.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-
-      const deltaX = e.touches[0].clientX - initialX;
-      let newLeft = handleInitialLeft + deltaX;
-
-      const maxLeft = sliderContainer.offsetWidth - sliderHandle.offsetWidth;
-      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-
-      sliderHandle.style.left = ${newLeft}px;
-      sliderFill.style.width = ${newLeft + sliderHandle.offsetWidth / 2}px;
-
-      const currentPosition = newLeft + sliderHandle.offsetWidth / 2;
-      const unlockWidth = sliderContainer.offsetWidth * unlockThreshold;
-
-      if (currentPosition >= unlockWidth) {
-        sliderText.textContent = "Release to Unlock!";
-      } else {
-        sliderText.textContent = "Slide to Unlock";
-      }
-      e.preventDefault(); // Prevent scrolling while dragging
-    }, { passive: false });
-
-    document.addEventListener('touchend', () => {
-      if (!isDragging) return;
-      isDragging = false;
-
-      const currentHandlePosition = parseFloat(sliderHandle.style.left) + sliderHandle.offsetWidth / 2;
-      const unlockWidth = sliderContainer.offsetWidth * unlockThreshold;
-
-      if (currentHandlePosition >= unlockWidth) {
-        // Unlocked!
-        unlockScreen.style.opacity = '0';
-        unlockScreen.style.visibility = 'hidden';
-        setTimeout(() => {
-          unlockScreen.style.display = 'none';
-          rickrollContent.style.display = 'block';
-          setTimeout(() => {
-            rickrollContent.style.opacity = '1';
-            rickrollAudio.play().catch(error => {
-              console.warn("Autoplay was prevented:", error);
-            });
-          }, 50);
-        }, 500);
-      } else {
-        // Reset slider if not fully slid
-        sliderHandle.style.transition = 'left 0.3s ease';
-        sliderFill.style.transition = 'width 0.3s ease';
-        sliderHandle.style.left = '0px';
-        sliderFill.style.width = '0px';
-        sliderText.textContent = "Slide to Unlock";
-      }
-      sliderContainer.style.cursor = 'grab';
-    });
+    // Touch Event Listeners for Mobile
+    sliderKnob.addEventListener('touchstart', startDrag);
+    document.addEventListener('touchmove', onDrag);
+    document.addEventListener('touchend', endDrag);
   </script>
+
 </body>
 </html>
