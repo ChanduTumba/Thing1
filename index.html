@@ -3,20 +3,266 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oops! You've been Rickrolled!</title>
+  <title>Unlock to Proceed</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      overflow: hidden; /* Hide scrollbars if content exceeds viewport */
+    }
+
+    #unlock-screen {
+      text-align: center;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: opacity 0.5s ease-out;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #rickroll-content {
+      text-align: center;
+      padding-top: 50px;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      display: none; /* Hidden by default */
+      opacity: 0;
+      transition: opacity 0.5s ease-in;
+    }
+
+    .slider-container {
+      width: 250px;
+      height: 50px;
+      background-color: #ddd;
+      border-radius: 25px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 30px;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .slider-text {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      line-height: 50px;
+      text-align: center;
+      color: #666;
+      font-size: 18px;
+      z-index: 1;
+      pointer-events: none; /* Allow slider handle to be grabbed */
+    }
+
+    .slider-handle {
+      width: 50px;
+      height: 50px;
+      background-color: #4CAF50;
+      border-radius: 50%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      cursor: grab;
+      transition: background-color 0.2s ease;
+      z-index: 2;
+    }
+
+    .slider-handle:active {
+      cursor: grabbing;
+      background-color: #45a049;
+    }
+
+    .slider-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background-color: #4CAF50;
+      border-radius: 25px;
+      transition: width 0.1s linear;
+    }
+  </style>
 </head>
-<body style="text-align: center; padding-top: 50px; background-color: #f0f0f0; font-family: Arial, sans-serif;">
-  <h1>Oops! This isn’t a clue. You’ve just been Rickrolled!</h1>
-  <p style="font-size: 18px;">Enjoy this unexpected twist! 😉</p>
-  
-  <!-- Rick Astley Dancing GIF -->
-  <img src="rick-roll-rick-ashley.gif" 
-     alt="Rickroll GIF" width="300" 
-     style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-  <!-- Rickroll Audio -->
-  <audio autoplay>
-    <source src="https://www.myinstants.com/media/sounds/rick-roll.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+<body>
+
+  <div id="unlock-screen">
+    <h2>Slide to Unlock!</h2>
+    <div class="slider-container" id="sliderContainer">
+      <div class="slider-fill" id="sliderFill"></div>
+      <div class="slider-text" id="sliderText">Slide to Unlock</div>
+      <div class="slider-handle" id="sliderHandle"></div>
+    </div>
+  </div>
+
+  <div id="rickroll-content">
+    <h1>Oops! This isn’t a clue. You’ve just been Rickrolled!</h1>
+    <p style="font-size: 18px;">Enjoy this unexpected twist! 😉</p>
+
+    <img src="rick-roll-rick-ashley.gif" alt="Rickroll GIF" width="300" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+
+    <audio id="rickrollAudio" preload="auto">
+      <source src="https://www.myinstants.com/media/sounds/rick-roll.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <script>
+    const sliderContainer = document.getElementById('sliderContainer');
+    const sliderHandle = document.getElementById('sliderHandle');
+    const sliderFill = document.getElementById('sliderFill');
+    const sliderText = document.getElementById('sliderText');
+    const unlockScreen = document.getElementById('unlock-screen');
+    const rickrollContent = document.getElementById('rickroll-content');
+    const rickrollAudio = document.getElementById('rickrollAudio');
+
+    let isDragging = false;
+    let startX;
+    let handleOffset = 0;
+    const unlockThreshold = 0.9; // Percentage of the slider width to trigger unlock
+
+    sliderHandle.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      handleOffset = sliderHandle.getBoundingClientRect().left - sliderContainer.getBoundingClientRect().left;
+      sliderHandle.style.transition = 'none'; // Disable transition during drag
+      sliderFill.style.transition = 'none';
+      sliderContainer.style.cursor = 'grabbing';
+    });
+
+    // For mobile touch events
+    sliderHandle.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      handleOffset = sliderHandle.getBoundingClientRect().left - sliderContainer.getBoundingClientRect().left;
+      sliderHandle.style.transition = 'none';
+      sliderFill.style.transition = 'none';
+      sliderContainer.style.cursor = 'grabbing';
+      e.preventDefault(); // Prevent scrolling while dragging
+    }, { passive: false }); // passive: false to allow preventDefault
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+
+      const sliderContainerRect = sliderContainer.getBoundingClientRect();
+      let newX = e.clientX - sliderContainerRect.left - (sliderHandle.offsetWidth / 2);
+
+      // Clamp newX within the slider bounds
+      newX = Math.max(0, Math.min(newX, sliderContainerRect.width - sliderHandle.offsetWidth));
+
+      sliderHandle.style.left = ${newX}px;
+      sliderFill.style.width = ${newX + sliderHandle.offsetWidth / 2}px;
+
+      const currentPosition = newX + sliderHandle.offsetWidth / 2;
+      const unlockWidth = sliderContainerRect.width * unlockThreshold;
+
+      if (currentPosition >= unlockWidth) {
+        sliderText.textContent = "Release to Unlock!";
+      } else {
+        sliderText.textContent = "Slide to Unlock";
+      }
+    });
+
+    // For mobile touch events
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+
+      const sliderContainerRect = sliderContainer.getBoundingClientRect();
+      let newX = e.touches[0].clientX - sliderContainerRect.left - (sliderHandle.offsetWidth / 2);
+
+      newX = Math.max(0, Math.min(newX, sliderContainerRect.width - sliderHandle.offsetWidth));
+
+      sliderHandle.style.left = ${newX}px;
+      sliderFill.style.width = ${newX + sliderHandle.offsetWidth / 2}px;
+
+      const currentPosition = newX + sliderHandle.offsetWidth / 2;
+      const unlockWidth = sliderContainerRect.width * unlockThreshold;
+
+      if (currentPosition >= unlockWidth) {
+        sliderText.textContent = "Release to Unlock!";
+      } else {
+        sliderText.textContent = "Slide to Unlock";
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const sliderContainerRect = sliderContainer.getBoundingClientRect();
+      const currentHandlePosition = parseFloat(sliderHandle.style.left) + sliderHandle.offsetWidth / 2;
+      const unlockWidth = sliderContainerRect.width * unlockThreshold;
+
+      if (currentHandlePosition >= unlockWidth) {
+        // Unlocked!
+        unlockScreen.style.opacity = '0';
+        unlockScreen.style.visibility = 'hidden';
+        setTimeout(() => {
+          unlockScreen.style.display = 'none';
+          rickrollContent.style.display = 'block';
+          setTimeout(() => {
+            rickrollContent.style.opacity = '1';
+            // Attempt to play audio
+            rickrollAudio.play().catch(error => {
+              console.warn("Autoplay was prevented:", error);
+              // Fallback for browsers that still block autoplay
+              // You might want to display a "Play Sound" button here
+              // if autoplay consistently fails.
+            });
+          }, 50); // Small delay for fade-in effect
+        }, 500); // Wait for unlock screen to fade out
+      } else {
+        // Reset slider if not fully slid
+        sliderHandle.style.transition = 'left 0.3s ease';
+        sliderFill.style.transition = 'width 0.3s ease';
+        sliderHandle.style.left = '0px';
+        sliderFill.style.width = '0px';
+        sliderText.textContent = "Slide to Unlock";
+      }
+      sliderContainer.style.cursor = 'grab';
+    });
+
+    // For mobile touch events
+    document.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const sliderContainerRect = sliderContainer.getBoundingClientRect();
+      const currentHandlePosition = parseFloat(sliderHandle.style.left) + sliderHandle.offsetWidth / 2;
+      const unlockWidth = sliderContainerRect.width * unlockThreshold;
+
+      if (currentHandlePosition >= unlockWidth) {
+        // Unlocked!
+        unlockScreen.style.opacity = '0';
+        unlockScreen.style.visibility = 'hidden';
+        setTimeout(() => {
+          unlockScreen.style.display = 'none';
+          rickrollContent.style.display = 'block';
+          setTimeout(() => {
+            rickrollContent.style.opacity = '1';
+            rickrollAudio.play().catch(error => {
+              console.warn("Autoplay was prevented:", error);
+            });
+          }, 50);
+        }, 500);
+      } else {
+        // Reset slider if not fully slid
+        sliderHandle.style.transition = 'left 0.3s ease';
+        sliderFill.style.transition = 'width 0.3s ease';
+        sliderHandle.style.left = '0px';
+        sliderFill.style.width = '0px';
+        sliderText.textContent = "Slide to Unlock";
+      }
+      sliderContainer.style.cursor = 'grab';
+    });
+  </script>
 </body>
 </html>
